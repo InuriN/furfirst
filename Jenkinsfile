@@ -84,8 +84,7 @@ pipeline {
                             -Dsonar.sources=src \
                             -Dsonar.tests=tests \
                             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
-                            -Dsonar.exclusions=node_modules/**,coverage/** \
-                            -Dsonar.testExecutionReportPaths=coverage/test-reporter.xml
+                            -Dsonar.exclusions=node_modules/**,coverage/**
                     '''
                 }
             }
