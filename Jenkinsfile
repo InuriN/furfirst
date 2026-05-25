@@ -73,6 +73,8 @@ pipeline {
                 echo 'Running SonarQube code quality analysis...'
                 withSonarQubeEnv('SonarQube') {
                     sh '''
+                        export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+                        export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
                         cd backend
                         npm install
                         npx sonar-scanner \
