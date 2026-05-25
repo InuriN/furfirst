@@ -126,11 +126,11 @@ pipeline {
             steps {
                 echo 'Deploying FurFirst to staging environment...'
                 sh '''
+                    echo "Removing any conflicting containers..."
+                    docker rm -f furfirst-mongo furfirst-backend furfirst-frontend furfirst-prometheus furfirst-grafana || true
+
                     echo "Stopping existing staging containers..."
                     docker-compose -f docker-compose.yml down --remove-orphans || true
-
-                    echo "Removing any conflicting containers..."
-                    docker rm -f furfirst-prometheus furfirst-mongo furfirst-grafana 2>/dev/null || true
 
                     echo "Starting staging environment..."
                     docker-compose -f docker-compose.yml up -d
@@ -162,14 +162,22 @@ pipeline {
                     echo "Tagging images for production release..."
                     docker tag ${BACKEND_IMAGE}:${DOCKER_TAG} ${BACKEND_IMAGE}:prod-${DOCKER_TAG}
                     docker tag ${FRONTEND_IMAGE}:${DOCKER_TAG} ${FRONTEND_IMAGE}:prod-${DOCKER_TAG}
+
                     echo "Stopping staging environment..."
-                    docker-compose -f docker-compose.yml down || true
+                    docker-compose -f docker-compose.yml down --remove-orphans || true
+
+                    echo "Removing any conflicting containers..."
+                    docker rm -f furfirst-mongo-prod furfirst-backend-prod furfirst-frontend-prod furfirst-prometheus-prod furfirst-grafana-prod || true
+
                     echo "Starting production environment..."
                     docker-compose -f docker-compose.prod.yml up -d
+
                     echo "Waiting for production services to start..."
                     sleep 20
+
                     echo "Verifying production health..."
                     curl -f http://localhost:5000/health || exit 1
+
                     echo "Production release ${DOCKER_TAG} deployed successfully"
                 '''
                 sh '''
