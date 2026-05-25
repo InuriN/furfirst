@@ -127,13 +127,20 @@ pipeline {
                 echo 'Deploying FurFirst to staging environment...'
                 sh '''
                     echo "Stopping existing staging containers..."
-                    docker-compose -f docker-compose.yml down || true
+                    docker-compose -f docker-compose.yml down --remove-orphans || true
+
+                    echo "Removing any conflicting containers..."
+                    docker rm -f furfirst-prometheus furfirst-mongo furfirst-grafana 2>/dev/null || true
+
                     echo "Starting staging environment..."
                     docker-compose -f docker-compose.yml up -d
+
                     echo "Waiting for services to start..."
                     sleep 20
+
                     echo "Checking backend health..."
                     curl -f http://localhost:5000/health || exit 1
+
                     echo "Staging deployment successful"
                 '''
             }
