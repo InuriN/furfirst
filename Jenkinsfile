@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     environment {
         APP_NAME = 'furfirst'
         BACKEND_IMAGE = 'furfirst-backend'
@@ -9,16 +8,12 @@ pipeline {
         SONAR_PROJECT_KEY = 'furfirst'
         NODE_ENV = 'test'
     }
-
     options {
         timeout(time: 60, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
         disableConcurrentBuilds()
     }
-
     stages {
-
-        // STAGE 1 - BUILD
 
         stage('Build') {
             steps {
@@ -45,14 +40,18 @@ pipeline {
             }
         }
 
-        // STAGE 2 - TEST
-
         stage('Test') {
             steps {
                 echo 'Running automated tests...'
                 sh '''
                     cd backend
                     npm install
+                    brew services start mongodb-community || true
+                    sleep 5
+                    export MONGO_URI=mongodb://localhost:27017/furfirst_test
+                    export JWT_SECRET=xK9mP2qL8nR5vT3wY7zA_furfirst_test_secret_key
+                    export NODE_ENV=test
+                    export PORT=5001
                     npm test -- --forceExit --coverage --testTimeout=30000
                 '''
             }
@@ -68,8 +67,6 @@ pipeline {
                 }
             }
         }
-
-        // STAGE 3 - CODE QUALITY
 
         stage('Code Quality') {
             steps {
@@ -100,8 +97,6 @@ pipeline {
             }
         }
 
-        // STAGE 4 - SECURITY
-
         stage('Security') {
             steps {
                 echo 'Running Snyk security vulnerability scan...'
@@ -118,7 +113,7 @@ pipeline {
             }
             post {
                 always {
-                    echo 'Security scan completed '
+                    echo 'Security scan completed'
                 }
                 success {
                     echo 'No high severity vulnerabilities found'
@@ -126,24 +121,18 @@ pipeline {
             }
         }
 
-        // STAGE 5 - DEPLOY (STAGING)
-
         stage('Deploy') {
             steps {
                 echo 'Deploying FurFirst to staging environment...'
                 sh '''
                     echo "Stopping existing staging containers..."
                     docker-compose -f docker-compose.yml down || true
-
                     echo "Starting staging environment..."
                     docker-compose -f docker-compose.yml up -d
-
                     echo "Waiting for services to start..."
                     sleep 20
-
                     echo "Checking backend health..."
                     curl -f http://localhost:5000/health || exit 1
-
                     echo "Staging deployment successful"
                 '''
             }
@@ -158,8 +147,6 @@ pipeline {
             }
         }
 
-        // STAGE 6 - RELEASE 
-
         stage('Release') {
             steps {
                 echo 'Promoting FurFirst to production environment...'
@@ -167,19 +154,14 @@ pipeline {
                     echo "Tagging images for production release..."
                     docker tag ${BACKEND_IMAGE}:${DOCKER_TAG} ${BACKEND_IMAGE}:prod-${DOCKER_TAG}
                     docker tag ${FRONTEND_IMAGE}:${DOCKER_TAG} ${FRONTEND_IMAGE}:prod-${DOCKER_TAG}
-
                     echo "Stopping staging environment..."
                     docker-compose -f docker-compose.yml down || true
-
                     echo "Starting production environment..."
                     docker-compose -f docker-compose.prod.yml up -d
-
                     echo "Waiting for production services to start..."
                     sleep 20
-
                     echo "Verifying production health..."
                     curl -f http://localhost:5000/health || exit 1
-
                     echo "Production release ${DOCKER_TAG} deployed successfully"
                 '''
                 sh '''
@@ -200,25 +182,19 @@ pipeline {
             }
         }
 
-        // STAGE 7 - MONITORING
-
         stage('Monitoring') {
             steps {
                 echo 'Verifying monitoring setup...'
                 sh '''
                     echo "Checking Prometheus is running..."
                     curl -f http://localhost:9090/-/healthy || exit 1
-
                     echo "Checking Grafana is running..."
                     curl -f http://localhost:3001/api/health || exit 1
-
                     echo "Checking backend metrics endpoint..."
                     curl -f http://localhost:5000/metrics || exit 1
-
                     echo "Verifying Prometheus is scraping FurFirst metrics..."
                     sleep 5
                     curl -f "http://localhost:9090/api/v1/query?query=up" || exit 1
-
                     echo "All monitoring checks passed"
                     echo "Prometheus: http://localhost:9090"
                     echo "Grafana: http://localhost:3001"
@@ -230,15 +206,12 @@ pipeline {
                     echo 'Monitoring stage passed - All systems are being monitored'
                 }
                 failure {
-                    echo 'Monitoring stage failed '
+                    echo 'Monitoring stage failed'
                 }
             }
         }
     }
 
-   
-    // POST PIPELINE ACTIONS
-    
     post {
         always {
             echo 'Pipeline execution completed'
@@ -250,7 +223,7 @@ pipeline {
             echo "Version v1.0.${BUILD_NUMBER} is live"
         }
         failure {
-            echo 'Pipeline failed - Check stage logs '
+            echo 'Pipeline failed - Check stage logs'
         }
         cleanup {
             echo 'Cleaning up workspace...'

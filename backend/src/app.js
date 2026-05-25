@@ -50,11 +50,11 @@ const startServer = async () => {
     if (process.env.NODE_ENV !== 'test') {
       await mongoose.connect(process.env.MONGO_URI);
       console.log('MongoDB connected');
+      const server = app.listen(PORT, () => {
+        console.log('FurFirst server running on port ' + PORT);
+      });
+      return server;
     }
-    const server = app.listen(PORT, () => {
-      console.log('FurFirst server running on port ' + PORT);
-    });
-    return server;
   } catch (error) {
     console.error('Server startup error:', error);
     process.exit(1);

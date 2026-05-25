@@ -1,8 +1,12 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
-const app = require('../src/app');
 
-require('dotenv').config({ path: '.env.test' });
+process.env.MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/furfirst_test';
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'xK9mP2qL8nR5vT3wY7zA_furfirst_test_secret_key';
+process.env.NODE_ENV = 'test';
+process.env.PORT = '5001';
+
+const app = require('../src/app');
 
 beforeAll(async () => {
   await mongoose.connect(process.env.MONGO_URI);

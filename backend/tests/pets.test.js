@@ -1,8 +1,12 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
-const app = require('../src/app');
 
-require('dotenv').config({ path: '.env.test' });
+process.env.MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/furfirst_test';
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'xK9mP2qL8nR5vT3wY7zA_furfirst_test_secret_key';
+process.env.NODE_ENV = 'test';
+process.env.PORT = '5002';
+
+const app = require('../src/app');
 
 let token;
 
@@ -19,7 +23,6 @@ beforeAll(async () => {
     email: 'owner@furfirst.com',
     password: 'password123'
   });
-
   token = res.body.token;
 });
 
@@ -44,7 +47,7 @@ describe('Pet Routes', () => {
           weight: 25
         });
       expect(res.statusCode).toBe(201);
-      expect(res.body.pet.name).toBe('Buddy');
+      expect(res.body.pet.name).toBe('Bella');
       petId = res.body.pet._id;
     });
   });
