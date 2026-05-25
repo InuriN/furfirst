@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: furfirst-mongo-prod
+    restart: always
+    volumes:
+      - mongo-prod-data:/data/db
+    networks:
+      - furfirst-prod-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: furfirst-backend-prod
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/furfirst_prod
+      - JWT_SECRET=xK9mP2qL8nR5vT3wY7zA_furfirst
+      - NODE_ENV=production
+    depends_on:
+      - mongo
+    networks:
+      - furfirst-prod-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: furfirst-frontend-prod
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - furfirst-prod-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: furfirst-prometheus-prod
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - furfirst-prod-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: furfirst-grafana-prod
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=furfirst123
+      - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      - grafana-prod-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - furfirst-prod-network
+
+volumes:
+  mongo-prod-data:
+  grafana-prod-data:
+
+networks:
+  furfirst-prod-network:
+    driver: bridge

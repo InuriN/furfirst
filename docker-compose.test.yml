@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  mongo-test:
+    image: mongo:6
+    container_name: furfirst-mongo-test
+    ports:
+      - "27018:27017"
+    networks:
+      - furfirst-test-network
+
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: furfirst-backend-test
+    environment:
+      - PORT=5001
+      - MONGO_URI=mongodb://mongo-test:27017/furfirst_test
+      - JWT_SECRET=xK9mP2qL8nR5vT3wY7zA_furfirst_test_secret_key
+      - NODE_ENV=test
+    depends_on:
+      - mongo-test
+    networks:
+      - furfirst-test-network
+    command: npm test
+
+networks:
+  furfirst-test-network:
+    driver: bridge

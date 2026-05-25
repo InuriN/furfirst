@@ -1,0 +1,34 @@
+{
+  "name": "furfirst-backend",
+  "version": "1.0.0",
+  "description": "FurFirst Vet Booking System : Backend API",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest --testEnvironment=node --forceExit --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ]
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "express-prom-bundle": "^6.6.0",
+    "prom-client": "^14.2.0"
+  },
+  "devDependencies": {
+    "jest": "^29.6.4",
+    "supertest": "^6.3.3",
+    "nodemon": "^3.0.1"
+  }
+}
