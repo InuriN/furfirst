@@ -1,7 +1,7 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 
-process.env.MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/furfirst_test';
+process.env.MONGO_URI = 'mongodb://localhost:27017/furfirst_test_pets';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'xK9mP2qL8nR5vT3wY7zA_furfirst_test_secret_key';
 process.env.NODE_ENV = 'test';
 process.env.PORT = '5002';
@@ -24,7 +24,7 @@ beforeAll(async () => {
     password: 'password123'
   });
   token = res.body.token;
-});
+}, 60000);
 
 afterAll(async () => {
   await mongoose.connection.dropDatabase();

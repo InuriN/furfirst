@@ -2,7 +2,7 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const Slot = require('../src/models/Slot');
 
-process.env.MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/furfirst_test';
+process.env.MONGO_URI = 'mongodb://localhost:27017/furfirst_test_appointments';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'xK9mP2qL8nR5vT3wY7zA_furfirst_test_secret_key';
 process.env.NODE_ENV = 'test';
 process.env.PORT = '5003';
@@ -31,7 +31,17 @@ beforeAll(async () => {
   const petRes = await request(app)
     .post('/api/pets')
     .set('Authorization', `Bearer ${token}`)
-    .send({ name: 'Whiskers', species: 'cat', breed: 'Persian', age: 2 });
+    .send({
+      name: 'Whiskers',
+      species: 'cat',
+      breed: 'Persian',
+      age: 2
+    });
+
+  if (!petRes.body.pet) {
+    console.error('Pet creation failed:', petRes.body);
+  }
+
   petId = petRes.body.pet._id;
 
   const slot = new Slot({
@@ -42,7 +52,7 @@ beforeAll(async () => {
   });
   const savedSlot = await slot.save();
   slotId = savedSlot._id;
-});
+}, 60000);
 
 afterAll(async () => {
   await mongoose.connection.dropDatabase();
